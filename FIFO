@@ -65,8 +65,6 @@ end if ;
 
 
 
-
-
 if enr='1' and empty0='0' then 
 
 dataout <= memory (conv_integer(readptr));
@@ -101,4 +99,102 @@ clk_div<= counter(0);
 end Behavioral;
 
 
+
+
+
+
+
+fifo_tb
+
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+ 
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--USE ieee.numeric_std.ALL;
+ 
+ENTITY fifo_test IS
+END fifo_test;
+ 
+ARCHITECTURE behavior OF fifo_test IS 
+ 
+    -- Component Declaration for the Unit Under Test (UUT)
+ 
+    COMPONENT fifo_correct
+    PORT(
+        clk : in std_logic;
+    clk_div : inout std_logic;
+    reset : in std_logic;
+    enr : in std_logic; --enable read,should be '0' when not in use.
+    enw : in std_logic; --enable write,should be '0' when not in use.
+    dataout : out std_logic_vector(3 downto 0); --output data
+    datain : in std_logic_vector (3 downto 0); --input data
+    empty : out std_logic; --set as '1' when the queue is empty
+    err : out std_logic;
+    full : out std_logic --set as '1' when the queue is full
+        );
+    END COMPONENT;
+    
+
+   --Inputs
+   signal clk : std_logic := '0';
+   signal reset,clk_div: std_logic;
+   signal enr : std_logic := '0';
+   signal enw : std_logic := '0';
+   signal datain : std_logic_vector(3 downto 0) := (others => '0');
+
+ 	--Outputs
+   signal dataout : std_logic_vector(3 downto 0);
+   signal empty : std_logic;
+   signal err : std_logic;
+   signal full : std_logic;
+
+   -- Clock period definitions
+   constant clk_period : time := 10 ns;
+ 
+BEGIN
+ 
+	-- Instantiate the Unit Under Test (UUT)
+   uut: fifo_correct PORT MAP (
+          clk => clk,
+          clk_div=>clk_div,
+          reset=>reset,
+          enr => enr,
+          enw => enw,
+          dataout => dataout,
+          datain => datain,
+          empty => empty,
+          err => err,
+          full => full
+        );
+
+   -- Clock process definitions
+   clk_process :process
+   begin
+		clk <= '0';
+		wait for clk_period/2;
+		clk <= '1';
+		wait for clk_period/2;
+   end process;
+   
+ reset<='1','0' after 50ns;
+ 
+enw<= '1', '0' after 200 ns ;
+ enr<= '0','1' after  200 ns ;
+  --Stimulus process
+  stim_proc: process
+   begin		
+	
+	datain<="1010";
+	wait for 10 ns;
+	datain<="1111";
+		wait for 10 ns;
+	datain<="1001";
+ wait for 10 ns;
+	datain<="0001";
+	 wait for 10 ns;
+	 
+ end process;
+
+END;
 
